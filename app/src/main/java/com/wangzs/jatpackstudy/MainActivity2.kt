@@ -12,22 +12,23 @@ import com.wangzs.jatpackstudy.databinding.ActivityMainBinding
 import com.wangzs.jatpackstudy.repository.MyRepository
 import com.wangzs.jatpackstudy.viewmodel.UserViewModel
 
-class MainActivity2 : AppCompatActivity() {
+class MainActivity2 : BaseVmActivity<ActivityMainBinding, UserViewModel>() {
     val TAG = this.javaClass.name
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        val myRepository = MyRepository(ApiService.getInstance())
-
-        val viewModel = UserViewModel(myRepository)
-
-        viewModel.datas.observe(this) {
+    override fun initData() {
+        super.initData()
+        mViewModel.datas.observe(this) {
             Log.e(TAG, "onCreate: ${it.toString()}")
-            binding.viewModel = viewModel
+            mBinding?.viewModel = mViewModel
         }
-        viewModel.dataChange()
+        mViewModel.dataChange()
+    }
+
+    override fun viewModelClass(): Class<UserViewModel> {
+        return UserViewModel::class.java
+    }
+
+    override fun getViewBinding(): ActivityMainBinding? {
+        return ActivityMainBinding.inflate(layoutInflater)
     }
 }

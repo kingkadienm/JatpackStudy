@@ -1,78 +1,84 @@
 package com.wangzs.jatpackstudy.viewmodel
 
-import android.os.Bundle
+import android.annotation.SuppressLint
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.JsonParseException
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 
+typealias Block<T> = suspend (CoroutineScope) -> T
+typealias Error = suspend (Exception) -> Unit
+typealias Cancel = suspend (Exception) -> Unit
 
-abstract class BaseViewModel : ViewModel() {
-    protected val TAG = this.javaClass.name
-    protected val _isLoading = MutableLiveData<Boolean>()
-    val isLoading: LiveData<Boolean> = _isLoading
-
-    protected val _errorMsg = MutableLiveData<String>()
-    val errorMsg: LiveData<String> = _errorMsg
-
-    protected fun launch(block: suspend () -> Unit) {
-        viewModelScope.launch {
+open class BaseViewModel : ViewModel() {
+    var TAG = "BaseViewModel"
+    val needLogin = MutableLiveData<Boolean>().apply { value = false }
+    protected fun launch(
+        block: Block<Unit>,
+        error: Error? = null,
+        cancel: Cancel? = null,
+        showErrorToast: Boolean = true,
+    ): Job {
+        return viewModelScope.launch {
             try {
-                _isLoading.value = true
-                block()
+                block.invoke(this)
             } catch (e: Exception) {
-                _errorMsg.value = e.message
-            } finally {
-                _isLoading.value = false
+                when (e) {
+                    is CancellationException -> {
+                        cancel?.invoke(e)
+                    }
+
+                    else -> {
+                        onError(e, showErrorToast)
+                        error?.invoke(e)
+                    }
+                }
+
             }
         }
     }
 
-    val loadStateLiveData = MutableLiveData<LoadState>()
-    val hasMoreStateLiveData = MutableLiveData<HasMoreState>()
-
-    open fun init(arguments: Bundle?) {}
-
     /**
-     * 加载数据开始  用调用V层的loadStart
+     * 统一处理错误
+     * @param e 异常
+     * @param showErrorToast 是否显示错误吐司
      */
-    protected fun loadStart() {
-        loadStateLiveData.value = LoadState.LoadStart
-    }
+    @SuppressLint("WrongConstant")
+    private fun onError(e: Exception, showErrorToast: Boolean) {
+        when (e) {
+            //可以处理是否登录逻辑
+//            needLogin = false
+            // 网络请求失败
+            is ConnectException, is SocketTimeoutException, is UnknownHostException, is HttpException -> {
+                if (showErrorToast) {
+//                    Toast.makeText(AppHelper.mContext, "网络请求失败", 1000).show()
+                }
 
-    /**
-     * 加载数据结束  用调用V层的loadFinish
-     */
-    protected fun loadFinish(success: Boolean) {
-        if (success) {
-            loadStateLiveData.setValue(LoadState.LoadSuccess)
-        } else {
-            loadStateLiveData.setValue(LoadState.LoadFail)
+                Log.e(TAG, "网络请求失败" + e.toString())
+
+
+            }
+            // 数据解析错误
+            is JsonParseException -> {
+                Log.e(TAG, "数据解析错误" + e.toString())
+
+            }
+            // 其他错误
+            else -> {
+                Log.e(TAG, "其他错误" + e.toString())
+
+            }
+
         }
     }
 
-    /**
-     * 是否有更多数据  用调用V层的HasMore和noMore
-     */
-    protected fun hasMore(hasMore: Boolean) {
-        if (hasMore) {
-            hasMoreStateLiveData.value = HasMoreState.HasMore
-        } else {
-            hasMoreStateLiveData.value = HasMoreState.NoMore
-        }
-    }
-
-    override fun onCleared() {
-        Log.v("BaseViewModel", this.javaClass.name + this + " onCleared()")
-        super.onCleared()
-    }
-
-}
-enum class LoadState {
-    LoadStart, LoadSuccess, LoadFail
-}
-enum class HasMoreState {
-    HasMore, NoMore
 }

@@ -16,20 +16,26 @@ import com.wangzs.jatpackstudy.bean.User
 import com.wangzs.jatpackstudy.bean.UserBean
 import kotlinx.coroutines.launch
 
-class UserViewModel(private val repository: MyRepository) : BaseViewModel() {
+class UserViewModel : BaseViewModel() {
+
+    private val repository by lazy {
+        MyRepository()
+    }
 
     private val data = MutableLiveData<TestResponse<List<User>>>()
-
     var datas = MutableLiveData<BaseResponse<UserBean>>()
 
     var count = 0
 
     fun dataChange() {
-        launch {
+        launch(block = {
             datas.value = repository.getDatas(count)
             count++
-            Log.e(TAG, "dataChange:${datas.value!!.data!!.curPage}   --- $count ")
-        }
+            Log.e(TAG, "dataChange:${datas.value!!.data!!}   --- $count ")
+        } , error = {
+
+        }, showErrorToast = true)
+
         Log.e(TAG, "dataChange: ")
 
     }
