@@ -20,7 +20,25 @@ typealias Error = suspend (Exception) -> Unit
 typealias Cancel = suspend (Exception) -> Unit
 
 open class BaseViewModel : ViewModel() {
-    var TAG = "BaseViewModel"
+
+    //加载数量
+    protected open val mTotalCount = 20
+    protected open var mCurrentSize = 0//当前加载数量
+    protected open var mCurrentPage = 0//当前加载页数
+    protected open var hasMore = true;
+    open fun loadMore() {}
+
+    open fun refresh() {}
+
+    open fun loadData() {}
+    override fun onCleared() {
+        super.onCleared()
+        mCurrentSize = 0
+        mCurrentPage = 0
+    }
+
+
+    var TAG = this.javaClass.name
     val needLogin = MutableLiveData<Boolean>().apply { value = false }
     protected fun launch(
         block: Block<Unit>,
@@ -42,7 +60,6 @@ open class BaseViewModel : ViewModel() {
                         error?.invoke(e)
                     }
                 }
-
             }
         }
     }
@@ -62,23 +79,16 @@ open class BaseViewModel : ViewModel() {
                 if (showErrorToast) {
 //                    Toast.makeText(AppHelper.mContext, "网络请求失败", 1000).show()
                 }
-
                 Log.e(TAG, "网络请求失败" + e.toString())
-
-
             }
             // 数据解析错误
             is JsonParseException -> {
                 Log.e(TAG, "数据解析错误" + e.toString())
-
             }
             // 其他错误
             else -> {
                 Log.e(TAG, "其他错误" + e.toString())
-
             }
-
         }
     }
-
 }

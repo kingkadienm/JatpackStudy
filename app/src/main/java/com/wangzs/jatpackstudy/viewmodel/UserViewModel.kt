@@ -25,19 +25,29 @@ class UserViewModel : BaseViewModel() {
     private val data = MutableLiveData<TestResponse<List<User>>>()
     var datas = MutableLiveData<BaseResponse<UserBean>>()
 
-    var count = 0
+    override fun loadMore() {
+        super.loadMore()
+        if (hasMore){
 
-    fun dataChange() {
+        }
+    }
+
+    override fun loadData() {
+        super.loadData()
         launch(block = {
-            datas.value = repository.getDatas(count)
-            count++
-            Log.e(TAG, "dataChange:${datas.value!!.data!!}   --- $count ")
-        } , error = {
+            datas.value = repository.getDatas(mCurrentPage, mCurrentSize)
+
+
+        }, error = {
 
         }, showErrorToast = true)
 
         Log.e(TAG, "dataChange: ")
 
+    }
+
+    fun dataChange() {
+        loadData()
     }
 
     fun onClick(view: View) {

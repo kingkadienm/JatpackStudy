@@ -13,8 +13,8 @@ class MyRepository : BaseRepository() {
         return apiService().getData();
     }
 
-    suspend fun getDatas(pageSize: Int): BaseResponse<UserBean> {
-        return apiService().getDatas(pageSize);
+    suspend fun getDatas(pageCount: Int,pageSize: Int): BaseResponse<UserBean> {
+        return apiService().getDatas(pageCount,pageSize)
     }
 
 }
