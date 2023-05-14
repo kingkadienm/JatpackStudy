@@ -7,7 +7,10 @@ import androidx.databinding.Bindable
 import com.wangzs.jatpackstudy.BR
 
 
-class User : BaseObservable() {
+class
+
+
+User : BaseObservable() {
 
     @get:Bindable
     var user_id: String = ""

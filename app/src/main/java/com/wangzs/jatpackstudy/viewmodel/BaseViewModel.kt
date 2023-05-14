@@ -23,14 +23,12 @@ open class BaseViewModel : ViewModel() {
 
     //加载数量
     protected open val mTotalCount = 20
-    protected open var mCurrentSize = 0//当前加载数量
-    protected open var mCurrentPage = 0//当前加载页数
+    protected open var mCurrentSize = 10//当前加载数量
+    protected open var mCurrentPage = 1//当前加载页数
     protected open var hasMore = true;
-    open fun loadMore() {}
 
-    open fun refresh() {}
+//    open fun loadData(isRefresh: Boolean, data: List<T>, totalPage: Int) {}
 
-    open fun loadData() {}
     override fun onCleared() {
         super.onCleared()
         mCurrentSize = 0

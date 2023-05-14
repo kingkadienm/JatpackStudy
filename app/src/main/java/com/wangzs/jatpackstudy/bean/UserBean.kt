@@ -6,7 +6,7 @@ import androidx.databinding.ObservableField
 import com.wangzs.jatpackstudy.BR
 
 class UserBean : BaseObservable() {
-   val totalField = ObservableField<Int>()
+    val totalField = ObservableField<Int>()
     var curPage = 0
     var offset = 0
     var isOver = false
@@ -14,7 +14,7 @@ class UserBean : BaseObservable() {
     var size = 0
 
     @get:Bindable
-    var total = 11
+    var total = 0
         set(value) {
             field = value
             notifyPropertyChanged(BR.total)
